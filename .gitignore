@@ -8,3 +8,6 @@ data/
 
 # Logs
 logs/
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
