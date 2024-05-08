@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "ml-project"
+version = "0.1.0"
+description = "ML model for project"
+authors = ["GwendolineN-1745873 <gwendolinenssn@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+numpy = "^1.26.4"
+matplotlib = "^3.8.4"
+tensorflow = "^2.16.1"
+keras = "^3.3.3"
+opencv-python = "^4.9.0.80"
+
+
+[tool.poetry.group.dev.dependencies]
+jupyter = "^1.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
