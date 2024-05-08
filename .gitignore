@@ -1,0 +1,10 @@
+# Mac specific
+.DS_Store
+
+# Windows specific
+
+# Data folders
+data/
+
+# Logs
+logs/
