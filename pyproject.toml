@@ -12,6 +12,7 @@ matplotlib = "^3.8.4"
 tensorflow = "^2.16.1"
 keras = "^3.3.3"
 opencv-python = "^4.9.0.80"
+scipy = "^1.13.0"
 
 
 [tool.poetry.group.dev.dependencies]
