@@ -5,6 +5,7 @@
 
 # Data folders
 data/
+split_data/
 
 # Logs
 logs/
