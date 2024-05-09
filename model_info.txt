@@ -3,4 +3,4 @@ Number of epochs: 50
 Number of convolutional layers: 3
 Number of filters for each convolutional layer: 16
 Filter size for each convolutional layer: [5, 3, 3]
-Final accuracy: 0.3499999940395355
+Final accuracy: 0.5249999761581421
