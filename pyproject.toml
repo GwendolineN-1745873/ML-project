@@ -6,7 +6,7 @@ authors = ["GwendolineN-1745873 <gwendolinenssn@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.11"
 numpy = "^1.26.4"
 matplotlib = "^3.8.4"
 tensorflow = "^2.16.1"
@@ -14,6 +14,7 @@ keras = "^3.3.3"
 opencv-python = "^4.9.0.80"
 scipy = "^1.13.0"
 scikit-learn = "^1.4.2"
+tensorflow-metal = "^1.1.0"
 
 
 [tool.poetry.group.dev.dependencies]
