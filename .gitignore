@@ -7,6 +7,8 @@
 data/
 split_data/
 split_data*
+extra_data*
+extra-data*
 
 # Logs
 logs/
