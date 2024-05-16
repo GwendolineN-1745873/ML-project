@@ -5,9 +5,9 @@ import tensorflow as tf
 import tensorflow.keras as keras
 from PIL import Image
 
-@st.cache(allow_output_mutation=True)
+@st.cache_resource
 def load_model():
-	model = keras.models.load_model('models/20240513-202940.keras')
+	model = keras.models.load_model('models/BEST20240513-212718.keras')
 	return model
 
 def predict_class(image, model):
