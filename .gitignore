@@ -21,3 +21,5 @@ __pycache__/
 
 # Ignore models
 models/
+
+model_info/
