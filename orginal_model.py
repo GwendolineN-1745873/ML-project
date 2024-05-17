@@ -229,8 +229,8 @@ def show_augmented_images(dataset):
 
 ########################################
 ## LOAD DATA
-# data_folder = 'split_data_20240515-182012'
-data_folder = 'new_split'
+data_folder = 'split_data_20240515-182012'
+# data_folder = 'new_split'
 
 google_images_data_folder = 'split_data_extra'
 
@@ -296,7 +296,6 @@ def resize_images(dataset):
 # Get synthetic data
 
 
-
 train_dataset = resize_images(train_dataset)
 validation_dataset = resize_images(validation_dataset)
 test_dataset = resize_images(test_dataset)
@@ -308,22 +307,16 @@ model = Sequential([
     Input(shape=(img_height, img_width, 3)),
     create_preprocessing_layers(),
     tf.keras.layers.Rescaling(1./255),
-    Conv2D(128, (9,9), activation='relu'),
+    Conv2D(16, (3, 3), activation='relu'),
     MaxPooling2D((2, 2)),
     BatchNormalization(),
-    Conv2D(64, (9,9), activation='relu'),
+    Conv2D(16, (3, 3), activation='relu'),
     MaxPooling2D((2, 2)),
     BatchNormalization(),
-    Conv2D(64, (9,9), activation='relu'),
+    Conv2D(16, (3, 3), activation='relu'),
     MaxPooling2D((2, 2)),
     BatchNormalization(),
-    Conv2D(32, (9,9), activation='relu'),
-    MaxPooling2D((2, 2)),
-    BatchNormalization(),
-    Conv2D(16, (9,9), activation='relu'),
-    MaxPooling2D((2, 2)),
-    BatchNormalization(),
-    Conv2D(32, (9,9), activation='relu'),
+    Conv2D(32, (3, 3), activation='relu'),
     Flatten(),
     Dense(256, 
         activation='relu',
