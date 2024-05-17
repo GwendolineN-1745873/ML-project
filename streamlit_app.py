@@ -9,7 +9,7 @@ import altair as alt
 
 @st.cache_resource()
 def load_model():
-	model = keras.models.load_model('model.keras', compile=False)
+	model = keras.models.load_model('model_info/maybethebest/model.keras', compile=False)
 	return model
 
 def predict_class(image, model):
@@ -55,6 +55,10 @@ def main():
         slot.text('Running inference...')
         test_image = Image.open(uploaded_file)
         st.image(test_image, caption="Input Image", width=400)
+
+        # # Resize the image to 256x256 pixels
+        # test_image = test_image.resize((256, 256))
+
         pred = predict_class(np.asarray(test_image), model)
         
         # Get top 3 predictions
