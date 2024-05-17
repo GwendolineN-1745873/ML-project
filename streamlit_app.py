@@ -4,85 +4,146 @@ import streamlit as st
 import tensorflow as tf
 import tensorflow.keras as keras
 from PIL import Image
+import altair as alt
 
-@st.cache_resource
+
+@st.cache_resource()
 def load_model():
-	model = keras.models.load_model('models/BEST20240513-212718.keras')
+	model = keras.models.load_model('57.keras', compile=False)
 	return model
 
 def predict_class(image, model):
 	image = tf.cast(image, tf.float32)
 	image = tf.image.resize(image, [256, 256])
 	image = np.expand_dims(image, axis = 0)
-	prediction = model.predict(image)
-
+	prediction = model.__call__(image)
 	return prediction
 
 
 def main():
-    # model = keras.models.load_model('models/20240513-202940.keras')
-    # class_names = ['CombWrench', 'Hammer', 'Screwdriver', 'Wrench']
-
-    st.title("Tool Classifier")
-
-    st.write("To use this app, upload an image of one of the following tools and click the 'Predict' button.")
-    st.write("Combination Wrench, Hammer, Screwdriver, Wrench.")
-    st.write("")
-
-    # Add spacing
-    st.write("")
-
-    # Load model
+    # Load the model
     model = load_model()
+    class_names = ['CombWrench', 'Hammer', 'Screwdriver', 'Wrench']
 
-    # Streamlit image input
+    # Title and description
+    st.title("Tool Classifier")
+    st.write("**Authors:** Melih Demirel and Gwendoline Nijssen")
+    st.write("This app classifies images of tools into one of the following categories: Combination Wrench, Hammer, Screwdriver, and Wrench.")
+
+    st.write("""
+    ### Dataset and Model Information
+    - **Dataset**: Used for training and testing the classifier, consisting of images of various tools.
+    - **Design Decisions**:
+      - **Model**: Convolutional Neural Network (CNN)
+      - **Hyperparameters**: Specific parameters used for training (e.g., learning rate, batch size)
+      - **Data Distribution**: Training, validation, and testing splits
+      - **Pre-processing**: Resizing images to 256x256 pixels, normalization, and data augmentation techniques.
+    """)
+
+    st.write("")
+
+    # File uploader for image input
     uploaded_file = st.file_uploader(
         label="Upload an image to classify",
         type=['png', 'jpg'],
     )
-    
-    if uploaded_file is None:
-        st.text('Waiting for upload....')
 
+    if uploaded_file is None:
+        st.text('Waiting for upload...')
     else:
         slot = st.empty()
-        slot.text('Running inference....')
+        slot.text('Running inference...')
         test_image = Image.open(uploaded_file)
-        st.image(test_image, caption="Input Image", width = 400)
+        st.image(test_image, caption="Input Image", width=400)
         pred = predict_class(np.asarray(test_image), model)
-        class_names = ['CombWrench', 'Hammer', 'Screwdriver', 'Wrench']
-        result = class_names[np.argmax(pred)]
-        output = 'The image is a ' + result
+        
+        # Get top 3 predictions
+        top_3_indices = np.argsort(pred[0])[-3:][::-1]
+        top_3_predictions = [(class_names[i], pred[0][i] * 100) for i in top_3_indices]
+        
+        output = f'Top 3 predictions:'
+        for i, (class_name, confidence) in enumerate(top_3_predictions):
+            output += f'\n{i+1}. {class_name} with {confidence:.2f}% confidence.'
+        
         slot.text('Done')
         st.success(output)
 
-    # if uploaded_file is not None and st.button("Predict"):
-    #     # Preprocess the image
-    #     image = keras.preprocessing.image.load_img(uploaded_file, target_size=(256, 256))
+        # Get top prediction
+        top_index = np.argmax(pred)
+        top_class = class_names[top_index]
+        confidence = pred[0][top_index] * 100
 
-    #     # Convert the image to a numpy array
-    #     input_arr = keras.preprocessing.image.img_to_array(image)
+        # Create a DataFrame for the bar chart
+        pred_df = pd.DataFrame({
+            'Class': class_names,
+            'Confidence': pred[0] * 100
+        })
 
-    #     # Normalize the image
-    #     input_arr = input_arr / 255.0
+        # Display the bar chart with horizontal labels using Altair
+        chart = alt.Chart(pred_df).mark_bar().encode(
+            x=alt.X('Class', sort=None),
+            y='Confidence'
+        ).properties(
+            width=600,
+            height=400
+        )
 
-    #     # Add a batch dimension
-    #     input_arr = np.array([input_arr])
+        # Display the chart in Streamlit
+        st.altair_chart(chart, use_container_width=True)
 
-    #     # Make the prediction
-    #     prediction = model.predict(input_arr)
+        # Display the top prediction
+        output = f'The image is a {top_class} with {confidence:.2f}% confidence.'
+        st.success(output)
 
-    #     # Get the class name
-    #     class_index = np.argmax(prediction)
-    #     class_name = class_names[class_index]
 
-    #     # Display the class name
-    #     st.write(f"The image is of class {class_name}")
 
-    #     # Show bars for the class probabilities
-    #     st.bar_chart(pd.Series(prediction[0], index=class_names))
 
-    #     st.success("Prediction done")
-      
-if __name__=='__main__': 
+
+        # Get top prediction
+        top_index = np.argmax(pred)
+        top_class = class_names[top_index]
+        confidence = pred[0][top_index] * 100
+        
+        # Create a DataFrame for the bar chart
+        pred_df = pd.DataFrame({
+            'Class': class_names,
+            'Confidence': pred[0] * 100
+        })
+        
+        # Create the bar chart using Altair
+        bars = alt.Chart(pred_df).mark_bar(color='yellow').encode(
+            x=alt.X('Class', sort=None),
+            y=alt.Y('Confidence', scale=alt.Scale(domain=[0, 100])),
+            tooltip=['Class', 'Confidence']
+        ).properties(
+            width=600,
+            height=400
+        ).configure_axis(
+            labelAngle=0  # Make x-axis labels horizontal
+        ).configure_view(
+            strokeWidth=0  # Remove the border around the chart
+        )
+
+        # Create the text for the bars
+        text = bars.mark_text(
+            align='center',
+            baseline='middle',
+            dy=-10,  # Adjust the position of the text
+            color='white'  # Make text color white for visibility
+        ).encode(
+            text='Confidence:Q'
+        )
+
+        # Combine the bar and text charts
+        chart = bars + text
+
+        # Display the chart in Streamlit
+        st.altair_chart(chart, use_container_width=True)
+        
+        # Display the top prediction
+        output = f'The image is a {top_class} with {confidence:.2f}% confidence.'
+        slot.text('Done')
+        st.success(output)
+
+if __name__ == '__main__':
     main()
