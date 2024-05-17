@@ -14,11 +14,21 @@ def load_model():
 	return model
 
 def predict_class(image, model):
-	image = tf.cast(image, tf.float32)
-	image = tf.image.resize(image, [256, 256])
-	image = np.expand_dims(image, axis = 0)
-	prediction = model.__call__(image)
-	return prediction
+    image = tf.cast(image, tf.float32)
+    image = tf.image.resize(image, [256, 256])
+    
+    # Check if shape is correct (1, 256, 256, 3)
+    image = np.expand_dims(image, axis = 0)
+    
+    # Check if shape is correct (1, 256, 256, 3)
+    if (image.shape[3] != 3):
+        image = image[..., :3]
+        
+    print(image.shape)
+    
+    prediction = model.__call__(image)
+    
+    return prediction
 
 # Function to open the image when button is clicked
 def toggle_image():
@@ -61,7 +71,7 @@ def main():
       - **Pre-processing**: Resizing images to 256x256 pixels, normalization, and data augmentation techniques (like RandomFlip, RandomRotation, RandomZoom, RandomBrightness, RandomCrop and RandomContrast).
 """)
 
-    if st.button("Click to see model"):
+    if st.button("Click to see model architecture"):
         toggle_image()
     st.write("")
 
@@ -78,9 +88,6 @@ def main():
         slot.text('Running inference...')
         test_image = Image.open(uploaded_file)
         st.image(test_image, caption="Input Image", width=400)
-
-        # # Resize the image to 256x256 pixels
-        # test_image = test_image.resize((256, 256))
 
         pred = predict_class(np.asarray(test_image), model)
         
