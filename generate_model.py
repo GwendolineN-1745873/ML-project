@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout, GlobalAveragePooling2D
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout, Input
 import tensorflow.keras as keras
 from tensorflow.keras.optimizers.schedules import ExponentialDecay
 import time
@@ -129,14 +129,14 @@ def plot_class_accuracies(cm, class_names):
     if show_plots:
         plt.show()
 
-def plot_test_images(test_images, test_preds):
+def plot_test_images(test_images, test_labels, test_preds):
     fig, ax = plt.subplots(3, 2, figsize=(20, 20))
 
     for i in range(3):
         image = test_images[i].numpy().astype("uint8")
         
         ax[i, 0].imshow(image)
-        ax[i, 0].set_title('Actual: {}'.format(class_names[labels[i]]))
+        ax[i, 0].set_title('Actual: {}'.format(class_names[test_labels[i]]))
         ax[i, 0].axis('off')
         ax[i, 1].bar(class_names, test_preds[i])
         ax[i, 1].set_title('Predicted: {}'.format(class_names[np.argmax(test_preds[i])]))
@@ -175,7 +175,8 @@ def create_preprocessing_layers():
             # seed=None,
             # fill_value=0.0,
         ),
-        tf.keras.layers.RandomCrop(200, 200)
+        tf.keras.layers.RandomCrop(200, 200),
+        tf.keras.layers.RandomContrast(0.2)
     ])
 
 def create_resize_and_rescale_layers():
@@ -228,9 +229,10 @@ def show_augmented_images(dataset):
 
 ########################################
 ## LOAD DATA
-data_folder = 'split_data_20240515-182012'
-google_images_data_folder = 'split_data_extra'
+# data_folder = 'split_data_20240515-182012'
+data_folder = 'new_split'
 
+google_images_data_folder = 'split_data_extra'
 
 train_dataset = load_data(data_folder + '/training', img_height, img_width, batch_size)
 validation_dataset = load_data(data_folder + '/validation', img_height, img_width, batch_size)
@@ -283,20 +285,35 @@ show_augmented_images(train_dataset)
 
 #         plt.imsave(f'{folder_name}{class_names[label]}/{i}.png', image)
         
+# Resize all images fist
+def resize_images(dataset):
+    resizer = Sequential([
+        tf.keras.layers.Resizing(img_height, img_width)
+    ])
 
+    return dataset.map(lambda x, y: (resizer(x), y))
+
+train_dataset = resize_images(train_dataset)
+validation_dataset = resize_images(validation_dataset)
+test_dataset = resize_images(test_dataset)
 
 # BUILDING THE MODEL
 model = Sequential([
+    # create_preprocessing_layers(),
+    # create_resize_and_rescale_layers(),
+    Input(shape=(img_height, img_width, 3)),
     create_preprocessing_layers(),
-    create_resize_and_rescale_layers(),
-    Conv2D(16, (3, 3), activation='relu', input_shape=(img_height, img_width, 3)),
+    tf.keras.layers.Rescaling(1./255),
+    Conv2D(128, (3, 3), activation='relu'),
     MaxPooling2D((2, 2)),
     BatchNormalization(),
-    Conv2D(16, (3, 3), activation='relu'),
+    Conv2D(64, (3, 3), activation='relu'),
     MaxPooling2D((2, 2)),
     BatchNormalization(),
-    # Dropout(0.4),
-    Conv2D(16, (3, 3), activation='relu'),
+    Conv2D(64, (3, 3), activation='relu'),
+    MaxPooling2D((2, 2)),
+    BatchNormalization(),
+    Conv2D(32, (3, 3), activation='relu'),
     MaxPooling2D((2, 2)),
     BatchNormalization(),
     Conv2D(16, (3, 3), activation='relu'),
@@ -306,32 +323,32 @@ model = Sequential([
     Flatten(),
     Dense(256, 
         activation='relu',
-        kernel_regularizer=regularizers.L1L2(l1=1e-5, l2=1e-4),
+        kernel_regularizer=regularizers.L1L2(l1=1e-4, l2=1e-4),
         bias_regularizer=regularizers.L2(1e-4),
         activity_regularizer=regularizers.L2(1e-5)
     ),
     Dense(128, 
         activation='relu',
-        kernel_regularizer=regularizers.L1L2(l1=1e-5, l2=1e-4),
+        kernel_regularizer=regularizers.L1L2(l1=1e-4, l2=1e-4),
         bias_regularizer=regularizers.L2(1e-4),
         activity_regularizer=regularizers.L2(1e-5)
     ),
-    Dropout(0.3),
+    Dropout(0.4),
     Dense(64,
         activation='relu',
-        kernel_regularizer=regularizers.L1L2(l1=1e-5, l2=1e-4),
+        kernel_regularizer=regularizers.L1L2(l1=1e-4, l2=1e-4),
         bias_regularizer=regularizers.L2(1e-4),
         activity_regularizer=regularizers.L2(1e-5)
     ),
-    # Dropout(0.3),
+    Dropout(0.4),
     Dense(4, activation='softmax')
 ])
 
 model.compile(
     optimizer = keras.optimizers.Adam(
         learning_rate=1e-4,
-        # epsilon=1e-8,
-        # weight_decay=1e-2,
+        # beta_1=0.9,
+        # beta_2=0.999,
     ),
     loss=keras.losses.SparseCategoricalCrossentropy(from_logits=False), 
     metrics=[
@@ -428,7 +445,7 @@ assert num_images > 3, "Plotting 3 images but batch contains less."
 test_preds = model.predict(test_images)
 
 # Plot some images and their predictions
-plot_test_images(test_images, test_preds)
+plot_test_images(test_images, test_labels, test_preds)
 
 # Save the model
 current_date_time = time.strftime("%Y%m%d-%H%M%S")
