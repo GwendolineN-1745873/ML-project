@@ -37,7 +37,7 @@ def main():
       - **Data Distribution**:  70/20/10 split for training, validation and testing
       - **Model**: Convolutional Neural Network (CNN)
       - **Hyperparameters**: Specific parameters used for training (e.g., learning rate, batch size)
-      - **Pre-processing**: Resizing images to 256x256 pixels, normalization, and data augmentation techniques.
+      - **Pre-processing**: Resizing images to 256x256 pixels, normalization, and data augmentation techniques (like RandomFlip, RandomRotation, RandomZoom, RandomBrightness, RandomCrop and RandomContrast).
     """)
 
     st.write("")
