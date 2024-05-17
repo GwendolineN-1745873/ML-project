@@ -1,3 +1,4 @@
+
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -19,6 +20,21 @@ def predict_class(image, model):
 	prediction = model.__call__(image)
 	return prediction
 
+# Function to open the image when button is clicked
+def toggle_image():
+    if not st.session_state.is_image_open:
+        with open("model.jpg", "rb") as img_file:
+            img_bytes = img_file.read()
+        st.image(img_bytes, caption="Model Architecture", use_column_width=True)
+        st.session_state.is_image_open = True
+    else:
+        st.session_state.is_image_open = False
+
+# Create a button to toggle the image display
+if not hasattr(st.session_state, "is_image_open"):
+    st.session_state.is_image_open = False
+
+
 
 def main():
     # Load the model
@@ -32,14 +48,21 @@ def main():
 
     st.write("""
     ### Dataset and Model Information
-    - **Dataset**:. 50 real images used for each category.
+    - **Dataset**: 50 real images used for each category.
     - **Design Decisions**:
       - **Data Distribution**:  70/20/10 split for training, validation and testing
-      - **Model**: Convolutional Neural Network (CNN)
+      - **Model**: 
+        - **CNN**:
+            - Data Augmentation first
+            - Filters: 128, 64, 32, 16 and 32 back to back
+            - Kernel size: (3, 3)
+            - Batch size: 16
       - **Hyperparameters**: Specific parameters used for training (e.g., learning rate, batch size)
       - **Pre-processing**: Resizing images to 256x256 pixels, normalization, and data augmentation techniques (like RandomFlip, RandomRotation, RandomZoom, RandomBrightness, RandomCrop and RandomContrast).
-    """)
+""")
 
+    if st.button("Click to see model"):
+        toggle_image()
     st.write("")
 
     # File uploader for image input
@@ -71,6 +94,8 @@ def main():
         
         slot.text('Done')
         st.success(output)
+
+        st.image('model.jpg')
 
 
 if __name__ == '__main__':
