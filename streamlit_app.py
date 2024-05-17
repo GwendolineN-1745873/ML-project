@@ -9,7 +9,7 @@ import altair as alt
 
 @st.cache_resource()
 def load_model():
-	model = keras.models.load_model('57.keras', compile=False)
+	model = keras.models.load_model('model.keras', compile=False)
 	return model
 
 def predict_class(image, model):
@@ -58,92 +58,16 @@ def main():
         pred = predict_class(np.asarray(test_image), model)
         
         # Get top 3 predictions
-        top_3_indices = np.argsort(pred[0])[-3:][::-1]
-        top_3_predictions = [(class_names[i], pred[0][i] * 100) for i in top_3_indices]
+        predictions = np.argsort(pred[0])[-4:][::-1]
+        preds = [(class_names[i], pred[0][i] * 100) for i in predictions]
         
-        output = f'Top 3 predictions:'
-        for i, (class_name, confidence) in enumerate(top_3_predictions):
-            output += f'\n{i+1}. {class_name} with {confidence:.2f}% confidence.'
+        output = f'Predictions:'
+        for i, (class_name, confidence) in enumerate(preds):
+            output += f'\n{i+1}. {confidence:.2f}% : {class_name}'
         
         slot.text('Done')
         st.success(output)
 
-        # Get top prediction
-        top_index = np.argmax(pred)
-        top_class = class_names[top_index]
-        confidence = pred[0][top_index] * 100
-
-        # Create a DataFrame for the bar chart
-        pred_df = pd.DataFrame({
-            'Class': class_names,
-            'Confidence': pred[0] * 100
-        })
-
-        # Display the bar chart with horizontal labels using Altair
-        chart = alt.Chart(pred_df).mark_bar().encode(
-            x=alt.X('Class', sort=None),
-            y='Confidence'
-        ).properties(
-            width=600,
-            height=400
-        )
-
-        # Display the chart in Streamlit
-        st.altair_chart(chart, use_container_width=True)
-
-        # Display the top prediction
-        output = f'The image is a {top_class} with {confidence:.2f}% confidence.'
-        st.success(output)
-
-
-
-
-
-        # Get top prediction
-        top_index = np.argmax(pred)
-        top_class = class_names[top_index]
-        confidence = pred[0][top_index] * 100
-        
-        # Create a DataFrame for the bar chart
-        pred_df = pd.DataFrame({
-            'Class': class_names,
-            'Confidence': pred[0] * 100
-        })
-        
-        # Create the bar chart using Altair
-        bars = alt.Chart(pred_df).mark_bar(color='yellow').encode(
-            x=alt.X('Class', sort=None),
-            y=alt.Y('Confidence', scale=alt.Scale(domain=[0, 100])),
-            tooltip=['Class', 'Confidence']
-        ).properties(
-            width=600,
-            height=400
-        ).configure_axis(
-            labelAngle=0  # Make x-axis labels horizontal
-        ).configure_view(
-            strokeWidth=0  # Remove the border around the chart
-        )
-
-        # Create the text for the bars
-        text = bars.mark_text(
-            align='center',
-            baseline='middle',
-            dy=-10,  # Adjust the position of the text
-            color='white'  # Make text color white for visibility
-        ).encode(
-            text='Confidence:Q'
-        )
-
-        # Combine the bar and text charts
-        chart = bars + text
-
-        # Display the chart in Streamlit
-        st.altair_chart(chart, use_container_width=True)
-        
-        # Display the top prediction
-        output = f'The image is a {top_class} with {confidence:.2f}% confidence.'
-        slot.text('Done')
-        st.success(output)
 
 if __name__ == '__main__':
     main()
