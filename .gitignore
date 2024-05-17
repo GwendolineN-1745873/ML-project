@@ -10,6 +10,7 @@ split_data*
 extra_data*
 extra-data*
 split*
+new_split*
 
 # Logs
 logs/
