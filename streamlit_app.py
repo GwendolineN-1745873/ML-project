@@ -32,11 +32,11 @@ def main():
 
     st.write("""
     ### Dataset and Model Information
-    - **Dataset**: Used for training and testing the classifier, consisting of images of various tools.
+    - **Dataset**:. 50 real images used for each category.
     - **Design Decisions**:
+      - **Data Distribution**:  70/20/10 split for training, validation and testing
       - **Model**: Convolutional Neural Network (CNN)
       - **Hyperparameters**: Specific parameters used for training (e.g., learning rate, batch size)
-      - **Data Distribution**: Training, validation, and testing splits
       - **Pre-processing**: Resizing images to 256x256 pixels, normalization, and data augmentation techniques.
     """)
 
